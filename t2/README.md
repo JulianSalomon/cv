@@ -29,9 +29,10 @@ Dos, o máximo tres si van a realizar al menos un opcional.
 
 Complete la tabla:
 
-| Integrante | github nick |
-|------------|-------------|
-|            |             |
+| Integrante        | github nick   |
+|-------------------|---------------|
+| Brayan Garcia     | bsgarciac     |
+| Julián Salomón    | JulianSalomon |
 
 ## Discusión
 

@@ -12,6 +12,8 @@ TimingTask spinningTask;
 boolean yDirection;
 // scaling is a power of 2
 int n = 4;
+// triangle's vertices color
+color[] c = {color(255), color(0), color(0, 0, 200)};
 
 // 2. Hints
 boolean triangleHint = true;
@@ -24,6 +26,8 @@ String renderer = P3D;
 void setup() {
   //use 2^n to change the dimensions
   size(1024, 1024, renderer);
+  strokeCap(SQUARE);
+
   scene = new Scene(this);
   if (scene.is3D())
     scene.setType(Scene.Type.ORTHOGRAPHIC);
@@ -42,7 +46,7 @@ void setup() {
   // world system.
   spinningTask = new TimingTask() {
     @Override
-    public void execute() {
+      public void execute() {
       scene.eye().orbit(scene.is2D() ? new Vector(0, 0, 1) :
         yDirection ? new Vector(0, 1, 0) : new Vector(1, 0, 0), PI / 100);
     }
@@ -73,15 +77,72 @@ void draw() {
 
 // Implement this function to rasterize the triangle.
 // Coordinates are given in the frame system which has a dimension of 2^n
-void triangleRaster() {
+void triangleRaster() {  
+  int limCoord = floor(pow(2, n)/2);
+  boolean repeat = true;
+  //for (int i = - limCoord; i <= limCoord; i++) {  // For intersection of grid
+  //  for (int j = - limCoord; j <= limCoord; j++) {
+  for (int i = - limCoord; i < limCoord; i++) {
+    for (int j = - limCoord; j < limCoord; j++) {
+      pushStyle();
+      Vector p = frame.worldLocation(new Vector(i + 0.5f, j + 0.5f));
+      //if (belongsToArea(p)) {  // For intersection of grid
+      //  point(i, j);
+      if (belongsToArea(p)) {
+        point(i + 0.5f, j + 0.5f);
+        repeat = false;
+      }
+      popStyle();
+    }
+    //if (i == limCoord && repeat) {  // For intersection of grid
+    if (i == limCoord - 1 && repeat) {
+      Vector v = v1;
+      v1 = v2;
+      v2 = v;
+      i = -limCoord;
+      repeat = false;
+    }
+  }
   // frame.location converts points from world to frame
   // here we convert v1 to illustrate the idea
   if (debug) {
     pushStyle();
-    stroke(255, 255, 0, 125);
-    point(round(frame.location(v1).x()), round(frame.location(v1).y()));
+    stroke(c[1], 150);
+    point(floor(frame.location(v1).x())+0.5f, floor(frame.location(v1).y())+0.5f);
+    stroke(c[2], 150);
+    point(floor(frame.location(v2).x())+0.5f, floor(frame.location(v2).y())+0.5f);
+    stroke(c[0], 150);
+    point(floor(frame.location(v3).x())+0.5f, floor(frame.location(v3).y())+0.5f);
     popStyle();
   }
+}
+
+boolean belongsToArea(Vector p) {
+  boolean belongsTo;
+  float w[] = new float[3];
+  belongsTo = (w[0] = edge(p, v1, v2)) >= 0;
+  belongsTo &= (belongsTo) ? (w[1] = edge(p, v2, v3)) >= 0 : false;
+  belongsTo &= (belongsTo) ? (w[2] = edge(p, v3, v1)) >= 0 : false;
+  if (belongsTo) {
+    float r = 0, g = 0, b = 0, 
+      area = edge(v1, v2, v3);
+    for (int i = 0; i < 3; i++) {
+      w[i] /= area;
+      r += w[i] * red(c[i]);
+      g += w[i] * green(c[i]);
+      b += w[i] * blue(c[i]);
+    }
+    stroke(r, g, b, 200);
+  }
+  return belongsTo;
+}
+
+float edge(Vector p, Vector vi, Vector vj) {
+  float px = frame.location(p).x(), py = frame.location(p).y(), 
+    vix = frame.location(vi).x(), viy = frame.location(vi).y(), 
+    vjx = frame.location(vj).x(), vjy = frame.location(vj).y();
+  //return (viy-vjy)*px+(vjx-vix)*py+(vix*vjy-viy*vjx);
+  return (px - vix) * (vjy - viy) - (py - viy) * (vjx - vix);
 }
 
 void randomizeTriangle() {
@@ -90,6 +151,10 @@ void randomizeTriangle() {
   v1 = new Vector(random(low, high), random(low, high));
   v2 = new Vector(random(low, high), random(low, high));
   v3 = new Vector(random(low, high), random(low, high));
+}
+
+void mouseClicked() {
+  v3 = new Vector(mouseX-width/2, mouseY-height/2);
 }
 
 void drawTriangleHint() {
