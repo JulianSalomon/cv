@@ -13,12 +13,13 @@ boolean yDirection;
 // scaling is a power of 2
 int n = 4;
 // triangle's vertices color
-color[] c = {color(255), color(0), color(0, 0, 200)};
+color[] c = {color(255, 255, 0), color(0, 255, 255), color(255, 0, 255)};
 
 // 2. Hints
 boolean triangleHint = true;
 boolean gridHint = true;
 boolean debug = true;
+boolean squareCap = false;
 
 // 3. Use FX2D, JAVA2D, P2D or P3D
 String renderer = P3D;
@@ -26,7 +27,6 @@ String renderer = P3D;
 void setup() {
   //use 2^n to change the dimensions
   size(1024, 1024, renderer);
-  strokeCap(SQUARE);
 
   scene = new Scene(this);
   if (scene.is3D())
@@ -80,21 +80,18 @@ void draw() {
 void triangleRaster() {  
   int limCoord = floor(pow(2, n)/2);
   boolean repeat = true;
-  //for (int i = - limCoord; i <= limCoord; i++) {  // For intersection of grid
-  //  for (int j = - limCoord; j <= limCoord; j++) {
   for (int i = - limCoord; i < limCoord; i++) {
     for (int j = - limCoord; j < limCoord; j++) {
       pushStyle();
       Vector p = frame.worldLocation(new Vector(i + 0.5f, j + 0.5f));
-      //if (belongsToArea(p)) {  // For intersection of grid
-      //  point(i, j);
       if (belongsToArea(p)) {
+        if (squareCap)
+          strokeCap(SQUARE);
         point(i + 0.5f, j + 0.5f);
         repeat = false;
       }
       popStyle();
     }
-    //if (i == limCoord && repeat) {  // For intersection of grid
     if (i == limCoord - 1 && repeat) {
       Vector v = v1;
       v1 = v2;
@@ -107,6 +104,8 @@ void triangleRaster() {
   // here we convert v1 to illustrate the idea
   if (debug) {
     pushStyle();
+    if (squareCap)
+      strokeCap(SQUARE);
     stroke(c[1], 150);
     point(floor(frame.location(v1).x())+0.5f, floor(frame.location(v1).y())+0.5f);
     stroke(c[2], 150);
@@ -132,7 +131,15 @@ boolean belongsToArea(Vector p) {
       g += w[i] * green(c[i]);
       b += w[i] * blue(c[i]);
     }
-    stroke(r, g, b, 200);
+    // Depth map 
+    // Normalized distance from eye location to point
+    // Distances in avg are between 0 and 1500
+    Vector eye = scene.eye().worldLocation(new Vector(0, 0));
+    float normDistance = norm(eye.distance(p), 1500, 0);
+    r *= normDistance;
+    g *= normDistance;
+    b *= normDistance;
+    stroke(r, g, b);
   }
   return belongsTo;
 }
@@ -141,7 +148,6 @@ float edge(Vector p, Vector vi, Vector vj) {
   float px = frame.location(p).x(), py = frame.location(p).y(), 
     vix = frame.location(vi).x(), viy = frame.location(vi).y(), 
     vjx = frame.location(vj).x(), vjy = frame.location(vj).y();
-  //return (viy-vjy)*px+(vjx-vix)*py+(vix*vjy-viy*vjx);
   return (px - vix) * (vjy - viy) - (py - viy) * (vjx - vix);
 }
 
@@ -154,7 +160,13 @@ void randomizeTriangle() {
 }
 
 void mouseClicked() {
-  v3 = new Vector(mouseX-width/2, mouseY-height/2);
+  if (mouseButton == LEFT) {
+    v1 = new Vector(mouseX-width/2, mouseY-height/2);
+  } else if (mouseButton == RIGHT) {
+    v2 = new Vector(mouseX-width/2, mouseY-height/2);
+  } else {
+    v3 = new Vector(mouseX-width/2, mouseY-height/2);
+  }
 }
 
 void drawTriangleHint() {
@@ -178,6 +190,8 @@ void keyPressed() {
     triangleHint = !triangleHint;
   if (key == 'd')
     debug = !debug;
+  if (key == 'c')  // Changes strokeCap to SQUARE
+    squareCap = !squareCap;
   if (key == '+') {
     n = n < 7 ? n+1 : 2;
     frame.setScaling(width/pow( 2, n));
