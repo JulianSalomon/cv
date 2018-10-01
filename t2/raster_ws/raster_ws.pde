@@ -14,13 +14,13 @@ boolean yDirection;
 int n = 4;
 // triangle's vertices color
 color[] c = {color(255, 255, 0), color(0, 255, 255), color(255, 0, 255)};
-
+int sft = 50;
 // 2. Hints
 boolean triangleHint = true;
 boolean gridHint = true;
 boolean debug = true;
 boolean squareCap = false;
-
+boolean antialiasing = false;
 // 3. Use FX2D, JAVA2D, P2D or P3D
 String renderer = P3D;
 
@@ -71,6 +71,15 @@ void draw() {
   pushStyle();
   scene.applyTransformation(frame);
   triangleRaster();
+  if(antialiasing){
+     if(keyPressed){
+       if(key == 'w' )
+          sft += 4;
+       if (key == 's')
+          sft -= 4;
+     } 
+    antialiasing();
+  }
   popStyle();
   popMatrix();
 }
@@ -144,6 +153,7 @@ boolean belongsToArea(Vector p) {
   return belongsTo;
 }
 
+
 float edge(Vector p, Vector vi, Vector vj) {
   float px = frame.location(p).x(), py = frame.location(p).y(), 
     vix = frame.location(vi).x(), viy = frame.location(vi).y(), 
@@ -183,6 +193,97 @@ void drawTriangleHint() {
   popStyle();
 }
 
+void antialiasing() {
+  int limCoord = floor(pow(2, n)/2);
+  for (int i = - limCoord; i < limCoord; i++) {
+    for (int j = - limCoord; j < limCoord; j++) {
+      Vector p = frame.worldLocation(new Vector(i + 0.5f, j + 0.5f));
+      if (belongsToArea(p)) {
+        Vector[] n = neightboors(i, j);
+        for (int k = 0; k < 8; k++) {
+          if (!belongsToArea(n[k])) {
+            soft(p);
+            int[] po = positions(k);
+            point(i + po[0] + 0.5f, j + po[1] + 0.5f);
+          }
+        }
+      }
+    }
+  }
+}
+
+Vector[] neightboors(int i, int j) {
+  Vector[] n = new Vector[8];
+  for (int k = 0; k < 8; k++) {
+    int [] po = positions(k);
+    n[k] = frame.worldLocation(new Vector(i + po[0] + 0.5f, j + po[1] + 0.5f));
+  }
+  return n;
+}
+
+int[] positions(int i) {
+  int [] po = new int[2];
+  switch(i) {
+  case 0:
+    po[0] = -1;
+    po[1] = -1;
+    break;
+  case 1:
+    po[0] = 1;
+    po[1] = 1;
+    break;
+  case 2:
+    po[0] = -1;
+    po[1] = 1;
+    break;
+  case 3:
+    po[0] = 1;
+    po[1] = -1;
+    break;
+  case 4:
+    po[0] = 0;
+    po[1] = -1;
+    break;
+  case 5:
+    po[0] = -1;
+    po[1] = 0;
+    break;
+  case 6:
+    po[0] = 0;
+    po[1] = 1;
+    break;
+  case 7:
+    po[0] = 1;
+    po[1] = 0;
+    break;
+  }
+  return po;
+}
+
+void soft(Vector p) {
+  float w[] = new float[3];
+  w[0] = edge(p, v1, v2);
+  w[1] = edge(p, v2, v3);
+  w[2] = edge(p, v3, v1);
+  float r = 0, g = 0, b = 0, 
+    area = edge(v1, v2, v3);
+  for (int i = 0; i < 3; i++) {
+    w[i] /= area;
+    r += w[i] * red(c[i]);
+    g += w[i] * green(c[i]);
+    b += w[i] * blue(c[i]);
+  }
+  // Depth map 
+  // Normalized distance from eye location to point
+  // Distances in avg are between 0 and 1500
+  Vector eye = scene.eye().worldLocation(new Vector(0, 0));
+  float normDistance = norm(eye.distance(p), 1500, 0);
+  r *= normDistance;
+  g *= normDistance;
+  b *= normDistance;
+  stroke(r, g, b, sft);
+}
+
 void keyPressed() {
   if (key == 'g')
     gridHint = !gridHint;
@@ -209,4 +310,6 @@ void keyPressed() {
       spinningTask.run(20);
   if (key == 'y')
     yDirection = !yDirection;
+  if (key == 'a')
+    antialiasing = !antialiasing;
 }
