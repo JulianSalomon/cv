@@ -1,4 +1,4 @@
-﻿# Taller raster
+# Taller raster
 
 ## Propósito
 
@@ -36,9 +36,13 @@ Complete la tabla:
 
 ## Interacción
 
-'a': Activar/Desactivar el antialiasing.</br>
-'w': Aumentar el nivel de suavizado.</br>
-'s': Disminuir el nivel de suavizado.</br>
+| Tecla	| Función								|
+| ----- | ------------------------------------- |
+| a 	| Activar/Desactivar el antialiasing.	|
+| w		| Aumentar el nivel de suavizado.		|
+| s		| Disminuir el nivel de suavizado.		|
+| p 	| Activar/Desactivar el depth map.		|
+| c		| Cambiar entre círculos y cuadrados.	|
 
 ## Discusión
 
