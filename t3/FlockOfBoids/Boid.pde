@@ -131,46 +131,26 @@ class Boid {
   }
 
   void render() {
-    pushStyle();
-
     // uncomment to draw boid axes
     //scene.drawAxes(10);
-
-    strokeWeight(2);
-    stroke(color(40, 255, 40));
-    fill(color(0, 255, 0, 125));
+    PShape s = actualMesh.getShape();
 
     // highlight boids under the mouse
     if (scene.trackedFrame("mouseMoved") == frame) {
-      stroke(color(0, 0, 255));
-      fill(color(0, 0, 255));
+      s.setStroke(color(0, 0, 255));
+      s.setFill(color(0, 0, 255));
+    } else if (frame == avatar) {    // highlight avatar
+      s.setStroke(color(255, 0, 0));
+      s.setFill(color(255, 0, 0));
+    } else {
+      s.setStroke(color(40, 255, 40));
+      s.setFill(color(0, 255, 0, 125));
     }
 
-    // highlight avatar
-    if (frame ==  avatar) {
-      stroke(color(255, 0, 0));
-      fill(color(255, 0, 0));
-    }
-
+    pushMatrix();
+    scale(sc);
     //draw boid
-    beginShape(TRIANGLES);
-    vertex(3 * sc, 0, 0);
-    vertex(-3 * sc, 2 * sc, 0);
-    vertex(-3 * sc, -2 * sc, 0);
-
-    vertex(3 * sc, 0, 0);
-    vertex(-3 * sc, 2 * sc, 0);
-    vertex(-3 * sc, 0, 2 * sc);
-
-    vertex(3 * sc, 0, 0);
-    vertex(-3 * sc, 0, 2 * sc);
-    vertex(-3 * sc, -2 * sc, 0);
-
-    vertex(-3 * sc, 0, 2 * sc);
-    vertex(-3 * sc, 2 * sc, 0);
-    vertex(-3 * sc, -2 * sc, 0);
-    endShape();
-
-    popStyle();
+    shape(s);
+    popMatrix();
   }
 }

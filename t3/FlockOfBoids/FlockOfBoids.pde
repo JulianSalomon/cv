@@ -22,11 +22,16 @@
  * Press 's' to call scene.fitBallInterpolation().
  */
 
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 import frames.primitives.*;
 import frames.core.*;
 import frames.processing.*;
 
 Scene scene;
+Interpolator interpolator;
 //flock bounding box
 static int flockWidth = 1280;
 static int flockHeight = 720;
@@ -38,6 +43,12 @@ ArrayList<Boid> flock;
 Frame avatar;
 boolean animate = true;
 
+Mesh actualMesh;
+List<Mesh> boidMeshes;
+
+// true for immediate, false for retained
+boolean drawingStyle = false;
+
 void setup() {
   size(1000, 800, P3D);
   scene = new Scene(this);
@@ -47,8 +58,13 @@ void setup() {
   scene.fitBall();
   // create and fill the list of boids
   flock = new ArrayList();
+
+  boidMeshes();
+
   for (int i = 0; i < initBoidNum; i++)
     flock.add(new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2)));
+
+  interpolator =  new Interpolator(scene);
 }
 
 void draw() {
@@ -57,6 +73,12 @@ void draw() {
   directionalLight(255, 255, 255, 0, 1, -100);
   walls();
   scene.traverse();
+
+  pushStyle();
+  strokeWeight(3);
+  stroke(255);
+  scene.drawPath(interpolator);
+  popStyle();
   // uncomment to asynchronously update boid avatar. See mouseClicked()
   // updateAvatar(scene.trackedFrame("mouseClicked"));
 }
@@ -174,5 +196,79 @@ void keyPressed() {
     else if (avatar != null)
       thirdPerson();
     break;
+  case '+':
+    int index = int(random(0, initBoidNum));
+    interpolator.addKeyFrame(flock.get(index).frame);
+    break;
+  case '-':
+    interpolator.clear();
+    break;
+  case 'd':
+    drawingStyle = !drawingStyle;
+    if (drawingStyle)
+      println("Immediate style");
+    else
+      println("Retained style");
+    break;
+  case 'm':
+    int idx = boidMeshes.indexOf(actualMesh);
+    actualMesh = boidMeshes.get((idx + 1) % boidMeshes.size());
+    println("Using " + actualMesh.getClass().getSimpleName() + " mesh");
+    break;
+  }
+}
+
+void boidMeshes() {
+  boidMeshes = new ArrayList();
+
+  {
+    WingedEdge we = new WingedEdge();
+    WingedEdge.Vertex v0 = we.addVertex(3, 0, 0), 
+      v1 = we.addVertex(-3, 2, 0), 
+      v2 = we.addVertex(-3, -2, 0), 
+      v3 = we.addVertex(-3, 0, 2);
+
+    WingedEdge.Edge e0 = we.addEdge(v0, v1), 
+      e1 = we.addEdge(v0, v2), 
+      e2 = we.addEdge(v0, v3), 
+      e3 = we.addEdge(v1, v2), 
+      e4 = we.addEdge(v1, v3), 
+      e5 = we.addEdge(v2, v3);
+
+    we.addFace(e0, e1, e3); 
+    we.addFace(e0, e2, e4); 
+    we.addFace(e1, e2, e5); 
+    we.addFace(e3, e4, e5);
+    boidMeshes.add(we);
+
+    actualMesh = we;
+  }  
+  {
+    FaceVertex fv = new FaceVertex();
+    FaceVertex.Vertex v0 = fv.addVertex(3, 0, 0), 
+      v1 = fv.addVertex(-3, 2, 0), 
+      v2 = fv.addVertex(-3, -2, 0), 
+      v3 = fv.addVertex(-3, 0, 2);
+
+    fv.addFace(v0, v1, v2);
+    fv.addFace(v0, v1, v3);
+    fv.addFace(v0, v2, v3);
+    fv.addFace(v1, v2, v3);
+
+    boidMeshes.add(fv);
+  }
+  {
+    VertexVertex vv = new VertexVertex();
+    VertexVertex.Vertex v0 = vv.addVertex(3, 0, 0), 
+      v1 = vv.addVertex(-3, 2, 0), 
+      v2 = vv.addVertex(-3, -2, 0), 
+      v3 = vv.addVertex(-3, 0, 2);
+
+    v0.addVertices(v1, v2, v3);
+    v1.addVertices(v0, v2, v3);
+    v2.addVertices(v0, v1, v3);
+    v3.addVertices(v0, v1, v2);
+
+    boidMeshes.add(vv);
   }
 }
