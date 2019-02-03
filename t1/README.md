@@ -1,5 +1,4 @@
-﻿
-# Taller ilusiones visuales
+﻿# Taller ilusiones visuales
 
 ## Propósito
 
@@ -35,9 +34,9 @@ Complete la tabla:
 
 2. Describa brevememente las referencias estudiadas y los posibles temas en los que le gustaría profundizar:
 
-- Al investigar nos dimos cuenta que existen una infinidad de ilusiones ópticas, gran variedad para escoger,  así que decidimos tomarlas de diferentes paginas al rededor del mundo(rusas, alemanas, griegas), para intentar tener ilusiones raras y adaptarlas de la mejor forma posible a Processing.
+Todas las referencias que tuvimos en cuenta eran ejemplos que nos acercaban a una ilusión y las intentamos imitar o alterar para llegar de una forma similar a obtener la misma ilusión.
 
-- Me gustaría profundizar en lo qué está detrás de estas ilusiones, el porqué ocurren, me parece interesante que en un mundo tan perfecto hayan  errores así.
+Sería muy interesante profundizar en técnicas que optimicen el desarrollo de videojuegos y animaciones.
 
 ## Entrega
 
