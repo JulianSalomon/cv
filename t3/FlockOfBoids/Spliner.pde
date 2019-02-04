@@ -13,7 +13,9 @@ abstract class Spliner {
   }
 
   void clear() {
-    points.clear();
+    if(points.size() > 0){
+      points.clear();
+    } 
   }
   
   void markControlPoints(){

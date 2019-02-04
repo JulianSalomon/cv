@@ -38,6 +38,7 @@ static int flockHeight = 720;
 static int flockDepth = 600;
 static boolean avoidWalls = true;
 Spliner spliner;
+Spliner2 spliner2;
 
 int initBoidNum = 900; // amount of boids to start the program with
 ArrayList<Boid> flock;
@@ -46,6 +47,7 @@ boolean animate = true;
 boolean showCurve = false;
 boolean showControlPoints = false;
 boolean showSpliner = false; 
+boolean showHermite = false; 
 Mesh actualMesh;
 List<Mesh> boidMeshes;
 
@@ -68,6 +70,7 @@ void setup() {
     flock.add(new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2)));
   interpolator =  new Interpolator(scene);
   initspliner();
+  inithermite();
 }
 
 void draw() {
@@ -91,7 +94,15 @@ void draw() {
     spliner.markCurve();
   }
   if (showControlPoints) {
-    spliner.markControlPoints();
+    if(showSpliner){
+      spliner.markControlPoints();
+    }
+    if(showHermite){
+      spliner2.markControlPoints();
+    }    
+  }
+  if (showHermite) {
+     spliner2.draw();
   }
   popStyle();
 }
@@ -101,6 +112,14 @@ void initspliner() {
   for (int i=0; i<4; i++) {
     int my_boid = int(random(0, initBoidNum));
     spliner.addPoint(flock.get(my_boid).frame);
+  }
+}
+
+void inithermite(){
+  spliner2 = new Hermite();
+  for (int i=0; i<4; i++) {
+    int my_boid = int(random(0, initBoidNum));
+    spliner2.addPoint(flock.get(my_boid).frame);
   }
 }
 
@@ -246,6 +265,14 @@ void keyPressed() {
     break;
   case 'x':
     showControlPoints = !showControlPoints; 
+    break;
+  case 'h':
+    showHermite = !showHermite; 
+    break;
+   case '/':
+    int my_boid2 = int(random(0, initBoidNum));
+    spliner2.addPoint(flock.get(my_boid2).frame);
+    println("Puntos de control Curva Hermite: ", spliner2.points.size()-1);
     break;
   }
 }
