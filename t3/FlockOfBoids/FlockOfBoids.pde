@@ -38,7 +38,6 @@ static int flockHeight = 720;
 static int flockDepth = 600;
 static boolean avoidWalls = true;
 Spliner spliner;
-Spliner2 spliner2;
 
 int initBoidNum = 900; // amount of boids to start the program with
 ArrayList<Boid> flock;
@@ -46,8 +45,7 @@ Frame avatar;
 boolean animate = true;
 boolean showCurve = false;
 boolean showControlPoints = false;
-boolean showSpliner = false; 
-boolean showHermite = false; 
+int actualSpliner = 0;
 Mesh actualMesh;
 List<Mesh> boidMeshes;
 
@@ -69,11 +67,14 @@ void setup() {
   for (int i = 0; i < initBoidNum; i++)
     flock.add(new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2)));
   interpolator =  new Interpolator(scene);
-  initspliner();
-  inithermite();
+
+  initSpliner();
 }
 
 void draw() {
+  if (frameCount % 50 == 0)
+    printStatus();
+
   background(10, 50, 25);
   ambientLight(128, 128, 128);
   directionalLight(255, 255, 255, 0, 1, -100);
@@ -87,40 +88,16 @@ void draw() {
 
   // uncomment to asynchronously update boid avatar. See mouseClicked()
   // updateAvatar(scene.trackedFrame("mouseClicked"));
-  if (showSpliner){
+  if (actualSpliner > 0) {
     spliner.draw();
-  }
-  if (showCurve) {
-    spliner.markCurve();
-  }
-  if (showControlPoints) {
-    if(showSpliner){
+    if (showCurve) {
+      spliner.markCurve();
+    }
+    if (showControlPoints) {
       spliner.markControlPoints();
     }
-    if(showHermite){
-      spliner2.markControlPoints();
-    }    
-  }
-  if (showHermite) {
-     spliner2.draw();
   }
   popStyle();
-}
-
-void initspliner() {
-  spliner = new Bezier();
-  for (int i=0; i<4; i++) {
-    int my_boid = int(random(0, initBoidNum));
-    spliner.addPoint(flock.get(my_boid).frame);
-  }
-}
-
-void inithermite(){
-  spliner2 = new Hermite();
-  for (int i=0; i<4; i++) {
-    int my_boid = int(random(0, initBoidNum));
-    spliner2.addPoint(flock.get(my_boid).frame);
-  }
 }
 
 void walls() {
@@ -238,27 +215,31 @@ void keyPressed() {
     break;
   case 'd':
     drawingStyle = !drawingStyle;
-    if (drawingStyle)
-      println("Immediate style");
-    else
-      println("Retained style");
+    printStatus();
     break;
   case 'm':
     int idx = boidMeshes.indexOf(actualMesh);
     actualMesh = boidMeshes.get((idx + 1) % boidMeshes.size());
-    println("Using " + actualMesh.getClass().getSimpleName() + " mesh");
+    printStatus();
+    break;
+  case 'n':
+    actualSpliner = ++actualSpliner % 3;
+    switch (actualSpliner) {
+    case 1:
+      spliner = new Bezier(spliner);
+      break;
+    case 2:
+      spliner = new Hermite(spliner);
+      break;
+    }
     break;
   case '+':
     int my_boid = int(random(0, initBoidNum));
     spliner.addPoint(flock.get(my_boid).frame);
-    println("Grado de la curva de Bezier: ", spliner.points.size()-1);
+    printStatus();
     break;
   case '-':
     spliner.clear();
-    break;
-  case 'b':
-    showSpliner = !showSpliner ; 
-    println("Grado de la curva de Bezier: ", spliner.points.size()-1);
     break;
   case 'c':
     showCurve = !showCurve;
@@ -266,16 +247,9 @@ void keyPressed() {
   case 'x':
     showControlPoints = !showControlPoints; 
     break;
-  case 'h':
-    showHermite = !showHermite; 
-    break;
-   case '/':
-    int my_boid2 = int(random(0, initBoidNum));
-    spliner2.addPoint(flock.get(my_boid2).frame);
-    println("Puntos de control Curva Hermite: ", spliner2.points.size()-1);
-    break;
   }
 }
+
 void boidMeshes() {
   boidMeshes = new ArrayList();
 
@@ -328,4 +302,22 @@ void boidMeshes() {
 
     boidMeshes.add(vv);
   }
+}
+
+void initSpliner() {
+  spliner = new Bezier();
+  for (int i=0; i<4; i++) {
+    int my_boid = int(random(0, initBoidNum));
+    spliner.addPoint(flock.get(my_boid).frame);
+  }
+}
+
+void printStatus() {
+  println("Mesh: " + actualMesh.getClass().getSimpleName()
+    + " - Drawing style: " + ((drawingStyle) ? "Immediate" : "Retained")
+    + ((actualSpliner > 0) ? "\n" + "Spliner: " + spliner.getClass().getSimpleName()
+    + " - " + spliner.toString()
+    + " - Control points: " + showControlPoints
+    + " - Lines between points: " + showCurve : "")
+    );
 }

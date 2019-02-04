@@ -30,6 +30,17 @@ Complete la tabla:
 | Brayan Garcia   | bsgarciac     |
 | Julián Salomón  | JulianSalomon |
 
+## Interacción
+
+| Tecla	| Función								|
+| ----- | ------------------------------------- |
+| d 	| Cambia estilo de dibujado del boid.	|
+| m		| Cambia mesh del boid.         		|
+| n		| Cambia la curva de interpolación.		|
+| + 	| Añade puntos de control a la curva.   |
+| -		| Elimina los puntos de la curva.   	|
+| x		| Resalta los puntos de control.    	|
+| c 	| Muestra líneas entre puntos.		    |
 
 ## Entrega
 
