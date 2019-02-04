@@ -37,12 +37,15 @@ static int flockWidth = 1280;
 static int flockHeight = 720;
 static int flockDepth = 600;
 static boolean avoidWalls = true;
+Spliner spliner;
 
 int initBoidNum = 900; // amount of boids to start the program with
 ArrayList<Boid> flock;
 Frame avatar;
 boolean animate = true;
-
+boolean showCurve = false;
+boolean showControlPoints = false;
+int actualSpliner = 0;
 Mesh actualMesh;
 List<Mesh> boidMeshes;
 
@@ -63,11 +66,15 @@ void setup() {
 
   for (int i = 0; i < initBoidNum; i++)
     flock.add(new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2)));
-
   interpolator =  new Interpolator(scene);
+
+  initSpliner();
 }
 
 void draw() {
+  if (frameCount % 50 == 0)
+    printStatus();
+
   background(10, 50, 25);
   ambientLight(128, 128, 128);
   directionalLight(255, 255, 255, 0, 1, -100);
@@ -78,9 +85,19 @@ void draw() {
   strokeWeight(3);
   stroke(255);
   scene.drawPath(interpolator);
-  popStyle();
+
   // uncomment to asynchronously update boid avatar. See mouseClicked()
   // updateAvatar(scene.trackedFrame("mouseClicked"));
+  if (actualSpliner > 0) {
+    spliner.draw();
+    if (showCurve) {
+      spliner.markCurve();
+    }
+    if (showControlPoints) {
+      spliner.markControlPoints();
+    }
+  }
+  popStyle();
 }
 
 void walls() {
@@ -196,24 +213,39 @@ void keyPressed() {
     else if (avatar != null)
       thirdPerson();
     break;
-  case '+':
-    int index = int(random(0, initBoidNum));
-    interpolator.addKeyFrame(flock.get(index).frame);
-    break;
-  case '-':
-    interpolator.clear();
-    break;
   case 'd':
     drawingStyle = !drawingStyle;
-    if (drawingStyle)
-      println("Immediate style");
-    else
-      println("Retained style");
+    printStatus();
     break;
   case 'm':
     int idx = boidMeshes.indexOf(actualMesh);
     actualMesh = boidMeshes.get((idx + 1) % boidMeshes.size());
-    println("Using " + actualMesh.getClass().getSimpleName() + " mesh");
+    printStatus();
+    break;
+  case 'n':
+    actualSpliner = ++actualSpliner % 3;
+    switch (actualSpliner) {
+    case 1:
+      spliner = new Bezier(spliner);
+      break;
+    case 2:
+      spliner = new Hermite(spliner);
+      break;
+    }
+    break;
+  case '+':
+    int my_boid = int(random(0, initBoidNum));
+    spliner.addPoint(flock.get(my_boid).frame);
+    printStatus();
+    break;
+  case '-':
+    spliner.clear();
+    break;
+  case 'c':
+    showCurve = !showCurve;
+    break;
+  case 'x':
+    showControlPoints = !showControlPoints; 
     break;
   }
 }
@@ -234,7 +266,6 @@ void boidMeshes() {
       e3 = we.addEdge(v1, v2), 
       e4 = we.addEdge(v1, v3), 
       e5 = we.addEdge(v2, v3);
-
     we.addFace(e0, e1, e3); 
     we.addFace(e0, e2, e4); 
     we.addFace(e1, e2, e5); 
@@ -271,4 +302,22 @@ void boidMeshes() {
 
     boidMeshes.add(vv);
   }
+}
+
+void initSpliner() {
+  spliner = new Bezier();
+  for (int i=0; i<4; i++) {
+    int my_boid = int(random(0, initBoidNum));
+    spliner.addPoint(flock.get(my_boid).frame);
+  }
+}
+
+void printStatus() {
+  println("Mesh: " + actualMesh.getClass().getSimpleName()
+    + " - Drawing style: " + ((drawingStyle) ? "Immediate" : "Retained")
+    + ((actualSpliner > 0) ? "\n" + "Spliner: " + spliner.getClass().getSimpleName()
+    + " - " + spliner.toString()
+    + " - Control points: " + showControlPoints
+    + " - Lines between points: " + showCurve : "")
+    );
 }
