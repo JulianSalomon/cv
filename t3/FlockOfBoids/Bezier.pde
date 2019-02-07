@@ -29,7 +29,7 @@ class Bezier extends Spliner {
     }
     Vector[] P = new Vector[n];
     for (int i=0; i < n; i++) {
-      P[i] = points.get(i).worldLocation(new Vector(0, 0, 0));
+      P[i] = points.get(i).position();
     }
     for (int i = 1; i < n; i++) {
       for (int j = 0; j < n - i; j++) {
