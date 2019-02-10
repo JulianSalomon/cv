@@ -9,7 +9,7 @@ class Hermite extends Spliner {
   }
 
   void draw() {
-    if (points.size() == 0) {
+    if (points.size() < 2) {
       return;
     }
     beginShape();
@@ -35,17 +35,15 @@ class Hermite extends Spliner {
     }
   }
 
-  Vector m(Vector[] P, int k, float t){
+  Vector m(Vector[] P, int k, float t) {
     // Finite difference  
     if (k == 0)
-      return Vector.multiply(Vector.subtract( P[k+1],P[k] ), 0.5 );
+      return Vector.multiply(Vector.subtract( P[k+1], P[k] ), 0.5 );
     if (k == P.length - 1)
-      return Vector.multiply(Vector.subtract( P[k],P[k-1] ), 0.5 );
+      return Vector.multiply(Vector.subtract( P[k], P[k-1] ), 0.5 );
     Vector C1 = Vector.subtract( P[k + 1], P[k] );
     Vector C2 = Vector.subtract( P[k], P[k-1] );
-    return Vector.multiply(Vector.add(C1,C2), 0.5);
-    // Catmull–Rom spline
-    //return Vector.subtract( P[k + 1], P[k - 1] );
+    return Vector.multiply(Vector.add(C1, C2), 0.5);
   }
 
   float h00(float t) {
@@ -62,6 +60,6 @@ class Hermite extends Spliner {
   }
 
   String toString() {
-    return "Puntos de control: " + (this.points.size()-1);
+    return "Puntos de control: " + (points.size()-1);
   }
 }

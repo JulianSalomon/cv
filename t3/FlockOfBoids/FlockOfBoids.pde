@@ -223,13 +223,16 @@ void keyPressed() {
     printStatus();
     break;
   case 'n':
-    actualSpliner = ++actualSpliner % 3;
+    actualSpliner = ++actualSpliner % 4;
     switch (actualSpliner) {
     case 1:
       spliner = new Bezier(spliner);
       break;
     case 2:
       spliner = new Hermite(spliner);
+      break;
+    case 3:
+      spliner = new Cubic(spliner);
       break;
     }
     break;

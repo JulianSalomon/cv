@@ -9,7 +9,7 @@ class Bezier extends Spliner {
   }
 
   void draw() {
-    if (points.size() == 0) {
+    if (points.size() < 2) {
       return;
     }
     beginShape();
@@ -18,7 +18,6 @@ class Bezier extends Spliner {
       Vector aux = casteljau(t, points.size());
       stroke(255);
       vertex(aux.x(), aux.y(), aux.z());
-      /*println(aux);*/
     }     
     endShape();
   }
@@ -40,6 +39,6 @@ class Bezier extends Spliner {
   }
 
   String toString() {
-    return "Grado de la curva de Bezier: " + (spliner.points.size()-1);
+    return "Grado de la curva de Bezier: " + (points.size()-1);
   }
 }
