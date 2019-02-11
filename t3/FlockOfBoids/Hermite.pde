@@ -9,7 +9,7 @@ class Hermite extends Spliner {
   }
 
   void draw() {
-    if (points.size() == 0) {
+    if (points.size() < 2) {
       return;
     }
     beginShape();
@@ -24,9 +24,9 @@ class Hermite extends Spliner {
       P[i] = points.get(i).worldLocation(new Vector(0, 0, 0));
     }
     Vector C1, C2, C;
-    for (int i=1; i<n-1; i++) {
+    for (int i=1; i < n; i++) {
       for (float t=0; t<1; t+=1/T) {     
-        C1 =  Vector.add(Vector.multiply(P[i-1], h00(t)), Vector.multiply(m(P, i, t), h10(t)));
+        C1 =  Vector.add(Vector.multiply(P[i-1], h00(t)), Vector.multiply(m(P, i-1, t), h10(t)));
         C2 =  Vector.add(Vector.multiply(P[i], h01(t)), Vector.multiply(m(P, i, t), h11(t)));
         C = Vector.add(C1, C2);
         stroke(255, 255, 0);
@@ -36,10 +36,14 @@ class Hermite extends Spliner {
   }
 
   Vector m(Vector[] P, int k, float t) {
-    Vector C1 = Vector.multiply(Vector.subtract( P[k + 1], P[k] ), T);
-    Vector C2 = Vector.multiply(Vector.subtract( P[k], P[k-1] ), T);
+    // Finite difference  
+    if (k == 0)
+      return Vector.multiply(Vector.subtract( P[k+1], P[k] ), 0.5 );
+    if (k == P.length - 1)
+      return Vector.multiply(Vector.subtract( P[k], P[k-1] ), 0.5 );
+    Vector C1 = Vector.subtract( P[k + 1], P[k] );
+    Vector C2 = Vector.subtract( P[k], P[k-1] );
     return Vector.multiply(Vector.add(C1, C2), 0.5);
-    //return Vector.multiply(Vector.subtract(P[k + 1], P[k- 1] ), 0.5);
   }
 
   float h00(float t) {
@@ -56,6 +60,6 @@ class Hermite extends Spliner {
   }
 
   String toString() {
-    return "Puntos de control: " + (this.points.size()-1);
+    return "Puntos de control: " + (points.size()-1);
   }
 }
