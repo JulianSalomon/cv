@@ -16,9 +16,10 @@ class Star {
 
   void render() {
     universePG.pushMatrix();
-    if (universe.trackedFrame("mouseMoved") == frame) {
+    if (!realSize)
+      universePG.scale(15);
+    if (universe.trackedFrame("mouseMoved") == frame)
       universePG.scale(1.5);
-    }
     universePG.shape(shape);
     universePG.popMatrix();
   }

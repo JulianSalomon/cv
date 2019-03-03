@@ -20,7 +20,7 @@ Frame selection;
 double time = 0;
 int w = 1000, h = 800;
 String renderer = P3D;
-boolean showEarth = true,
+boolean realSize = false, 
   showOrbitalPlane = false;
 
 void settings() {
@@ -64,7 +64,7 @@ void mouseClicked() {
 
 void mouseWheel(MouseEvent event) {
   if (keyPressed) {
-    time += 1;
+    time += Math.signum(event.getCount());
   } else
     universe.scale(-event.getCount() * 50);
 }
@@ -77,6 +77,9 @@ void keyPressed() {
   switch(key) {
   case 'r':
     showOrbitalPlane = !showOrbitalPlane;
+    break;
+  case 'e':
+    realSize = !realSize;
     break;
   }
 }
